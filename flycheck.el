@@ -365,15 +365,16 @@ buffer."
   "Check syntax in the current buffer."
   (interactive)
   (flycheck-clean-deferred-check)
-  (flycheck-clear)
   (if flycheck-mode
       (when (not (flycheck-running-p))
         (condition-case err
             (let ((checker (flycheck-get-checker-for-buffer)))
               (if checker
                   (flycheck-start-checker checker)
+                (flycheck-clear)
                 (flycheck-report-status "-")))
           (error
+           (flycheck-clear)
            (flycheck-report-status "!")
            (signal (car err) (cdr err)))))
     (user-error "Flycheck mode disabled")))
@@ -1963,6 +1964,7 @@ Parse the OUTPUT and report an appropriate error status."
 Error: %s" checker output (error-message-string err))
          (flycheck-report-status "!")
          (setq errors :errored)))
+    (flycheck-clear)
     (unless (eq errors :errored)
       (setq flycheck-current-errors (-> errors
                                       (flycheck-fix-error-filenames files)
@@ -2002,6 +2004,7 @@ _EVENT is ignored."
           (condition-case err
               (flycheck-finish-syntax-check checker exit-status files output)
             (error
+             (flycheck-clear)
              (flycheck-report-status "!")
              (signal (car err) (cdr err)))))))))
 
